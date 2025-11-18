@@ -1,0 +1,240 @@
+1.*** Login.aspx ***
+
+<asp:Label ID="lblMessage" runat="server" ForeColor="Red"></asp:Label><br /><asp:TextBox ID="txtUsername" runat="server"
+Placeholder="Username"></asp:TextBox><br />
+<asp:TextBox ID="txtPassword" runat="server" TextMode="Password"
+Placeholder="Password"></asp:TextBox><br />
+<asp:CheckBox ID="chkRememberMe" runat="server" Text="Remember Me" /><br /><asp:Button ID="btnLogin" runat="server" Text="Login"
+OnClick="btnLogin_Click" />
+
+
+*** Login.aspx.cs ***
+
+protected void Page_Load(object sender, EventArgs e)
+{
+ 
+ if (!IsPostBack && Request.Cookies["UserName"] != null)
+ {
+ txtUsername.Text = Request.Cookies["UserName"].Value;
+ chkRememberMe.Checked = true;
+ }
+}
+protected void btnLogin_Click(object sender, EventArgs e)
+{
+ string username = txtUsername.Text;
+ string password = txtPassword.Text;
+ 
+ if (username == "admin" && password == "1234")
+ {
+ 
+ Session["UserName"] = username;
+ 
+ if (chkRememberMe.Checked)
+ {
+ HttpCookie cookie = new HttpCookie("UserName", username);
+ cookie.Expires = DateTime.Now.AddDays(7);
+ Response.Cookies.Add(cookie);
+ }
+ else
+ {
+ 
+ if (Request.Cookies["UserName"] != null)
+ {
+ Response.Cookies["UserName"].Expires = DateTime.Now.AddDays(-1); }
+ }
+ 
+ Response.Redirect("Home.aspx");
+ }
+ else
+ {
+ lblMessage.Text = "Invalid login credentials!";
+ }
+}
+
+*** Home.aspx ***
+
+<asp:Label ID="lblWelcome" runat="server"></asp:Label><br />
+<asp:Button ID="btnLogout" runat="server" Text="Logout"
+OnClick="btnLogout_Click" />
+
+
+*** Home.aspx.cs ***
+
+protected void Page_Load(object sender, EventArgs e)
+{
+ if (Session["UserName"] != null)
+ {
+ lblWelcome.Text = "Welcome, " + Session["UserName"].ToString(); }
+ else
+ {
+ 
+ Response.Redirect("Login.aspx");
+ }
+}
+protected void btnLogout_Click(object sender, EventArgs e)
+{
+ Session.Abandon(); 
+ Response.Redirect("Login.aspx");
+}
+
+2..
+*** Employee.cs ***
+
+using System;
+public class Employee
+{
+ 
+ public int EmpId { get; set; }
+ public string Name { get; set; }
+ public string Email { get; set; }
+ public string Department { get; set; }
+ 
+ public Employee(int id, string name, string email, string dept)
+ {
+ EmpId = id;
+ Name = name;
+ Email = email;
+ Department = dept;
+ }
+ 
+ public string Save()
+ {
+ return $"Employee {Name} registered successfully!";
+ }
+}
+
+*** EmployeeRegistration.aspx ***
+
+<form id="form1" runat="server">
+ <div>
+ <h2>Employee Registration Form</h2>
+
+ <asp:Label Text="Employee ID:" runat="server" />
+ <asp:TextBox ID="txtId" runat="server"></asp:TextBox><br /><br />
+ <asp:Label Text="Name:" runat="server" />
+ <asp:TextBox ID="txtName" runat="server"></asp:TextBox><br /><br />
+ <asp:Label Text="Email:" runat="server" />
+ <asp:TextBox ID="txtEmail" runat="server"></asp:TextBox><br /><br />
+ <asp:Label Text="Department:" runat="server" />
+ <asp:TextBox ID="txtDept" runat="server"></asp:TextBox><br /><br />
+ <asp:Button ID="btnRegister" runat="server" Text="Register" OnClick="btnRegister_Click" /><br /><br />
+ 
+ <asp:Label ID="lblMessage" runat="server"
+ForeColor="Green"></asp:Label><br /><br />
+ 
+ <h3>Employee Details:</h3>
+ <asp:Label ID="lblEmpId" runat="server"
+ForeColor="Blue"></asp:Label><br />
+ <asp:Label ID="lblEmpName" runat="server"
+ForeColor="Blue"></asp:Label><br />
+ <asp:Label ID="lblEmpEmail" runat="server"
+ForeColor="Blue"></asp:Label><br />
+ <asp:Label ID="lblEmpDept" runat="server"
+ForeColor="Blue"></asp:Label>
+ </div>
+ </form>
+ 
+ 
+*** EmployeeRegistration.aspx.cs ***
+
+using System;
+namespace YourProject
+{
+ public partial class EmployeeRegistration : System.Web.UI.Page
+ {
+ protected void Page_Load(object sender, EventArgs e)
+ {
+ }
+ protected void btnRegister_Click(object sender, EventArgs e)
+ {
+
+ int id = Convert.ToInt32(txtId.Text);
+ string name = txtName.Text;
+ string email = txtEmail.Text;
+ string dept = txtDept.Text;
+ 
+ Employee emp = new Employee(id, name, email, dept);
+ 
+ lblMessage.Text = emp.Save();
+
+ lblEmpId.Text = "Employee ID: " + emp.EmpId;
+ lblEmpName.Text = "Name: " + emp.Name;
+ lblEmpEmail.Text = "Email: " + emp.Email;
+ lblEmpDept.Text = "Department: " + emp.Department;
+ }
+ }
+}
+
+*** Registration.aspx ***
+
+<form id="form1" runat="server">
+    <div style="width:380px; margin:30px;">
+      <h3>Create Account</h3>
+
+      <asp:ValidationSummary ID="vs" runat="server" HeaderText="Please fix:" />
+
+      <label>Full name</label><br/>
+      <asp:TextBox ID="txtFullName" runat="server" Width="100%"></asp:TextBox>
+      <asp:RequiredFieldValidator ControlToValidate="txtFullName" ErrorMessage="Name required." runat="server" Display="Dynamic" /><br/><br/>
+
+      <label>Email</label><br/>
+      <asp:TextBox ID="txtEmail" runat="server" Width="100%"></asp:TextBox>
+      <asp:RequiredFieldValidator ControlToValidate="txtEmail" ErrorMessage="Email required." runat="server" Display="Dynamic" />
+      <asp:RegularExpressionValidator ControlToValidate="txtEmail" ErrorMessage="Invalid email." ValidationExpression="^[^@\s]+@[^@\s]+\.[^@\s]+$" runat="server" Display="Dynamic" /><br/><br/>
+
+      <label>Password</label><br/>
+      <asp:TextBox ID="txtPassword" runat="server" TextMode="Password" Width="100%"></asp:TextBox>
+      <asp:RequiredFieldValidator ControlToValidate="txtPassword" ErrorMessage="Password required." runat="server" Display="Dynamic" /><br/><br/>
+
+      <label>Confirm password</label><br/>
+      <asp:TextBox ID="txtConfirm" runat="server" TextMode="Password" Width="100%"></asp:TextBox>
+      <asp:RequiredFieldValidator ControlToValidate="txtConfirm" ErrorMessage="Confirm required." runat="server" Display="Dynamic" />
+      <asp:CompareValidator ControlToValidate="txtConfirm" ControlToCompare="txtPassword" ErrorMessage="Passwords must match." runat="server" Display="Dynamic" /><br/><br/>
+
+      <asp:Button ID="btnRegister" runat="server" Text="Register" OnClick="btnRegister_Click" />
+      <asp:Label ID="lblMessage" runat="server" /><br/>
+    </div>
+  </form>
+  
+  
+*** Registration.aspx.cs ***
+
+using System;
+using System.Linq;
+
+public partial class Registration : System.Web.UI.Page
+{
+    private readonly UserService service;
+
+    public Registration()
+    {
+        service = new UserService(); 
+    }
+
+    protected void Page_Load(object sender, EventArgs e) { }
+
+    protected void btnRegister_Click(object sender, EventArgs e)
+    {
+        var name = txtFullName.Text.Trim();
+        var email = txtEmail.Text.Trim();
+        var password = txtPassword.Text;
+        var confirm = txtConfirm.Text;
+
+        var errors = service.ValidateRegistration(name, email, password, confirm);
+        if (errors.Any())
+        {
+            lblMessage.Text = string.Join("<br/>", errors);
+            return;
+        }
+
+        int id = service.Register(name, email, password);
+        if (id > 0)
+        {
+            lblMessage.Text = "Registration successful! (id: " + id + ")";
+        }
+        else
+        {
+            lblMessage.Text = "Registration failed. Try again.";
+        }
+    }
+}
